@@ -1,8 +1,8 @@
 const crypto = require("crypto");
 
-const encrypt = (alg = "sha3-512", digest = "hex") => crypto.createHash(alg).update(data).digest(digest)
+const encrypt = (data, alg = "sha3-512", digest = "hex") => crypto.createHash(alg).update(data).digest(digest)
 
-const generateCandidateKey = (partitionKey = '0') => {
+const generateCandidateKey = (partitionKey) => {
   const MAX_PARTITION_KEY_LENGTH = 256;
 
   let candidate = partitionKey;
@@ -15,9 +15,13 @@ const generateCandidateKey = (partitionKey = '0') => {
 }
 
 exports.deterministicPartitionKey = (event) => {
-  if (event && event.partitionKey) return generateCandidateKey(event.partitionKey)
+  let candidate = "0"
 
-  return encrypt(JSON.stringify(event))
+  if (event) {
+    candidate = event.partitionKey ? generateCandidateKey(event.partitionKey) : encrypt(JSON.stringify(event))
+  }
+
+  return candidate
 };
 
 // exports.deterministicPartitionKey = (event) => {
